@@ -62,6 +62,15 @@ From left to right on the right-hand side, the factors are the **likelihood of t
 
 For example, a coherent batch about moving existing appointments can make *reschedule* stand out for “Can we do Friday instead?” A proficient LLM may pick up that context in the **No-Hint** setting. In the **With-Hint** setting, an encoder's guess of *reschedule* can give a less proficient LLM additional evidence. A mistaken *schedule* hint can instead pull the prediction toward the wrong label, especially when the surrounding inputs supply weak evidence. The posterior is an explanatory model for this interaction. At inference time, BIDS-ICL supplies the batch prompt and reads the LLM's predictions.
 
+
+### How noisy Plackett–Luce informs the experimental design
+
+- **Sentence encoder → batch homogeneity.** We vary the sentence encoder used to embed and cluster inputs. Different encoders can produce batches with different levels of semantic homogeneity. For a fixed LLM, comparing these batches probes how the context $C$ changes the evidence for candidate labels and, in the theory, their utility scores $\lambda$. We use cluster coherence to characterize the resulting batches.
+- **LLM → worker and observed output.** The LLM is the worker $w$. It receives a prompt containing the clustered batch and produces a label for each input. The generated label is the observed report $\tilde{Y}$. For a fixed encoder and batch, comparing LLMs probes how models of different competency use the same context. The uncertainty profile $\eta_w$ represents these differences in the theory.
+- **No-Hint versus With-Hint → additional context.** Using the same batch and LLM, we compare prompts with inputs alone against prompts that also include encoder-generated pseudo-label hints. This tests whether hints help or hurt at different levels of homogeneity and model competency.
+
+The noisy PL likelihood $P(\tilde{Y}\mid\lambda,\eta_w)$ brings these roles together. The encoder shapes the batch context that informs the utilities, and the LLM produces the report from that context. The experiments compare observed prediction accuracy. The utilities and worker uncertainty serve as theoretical explanations.
+
 ## Setup
 
 Use Python 3.10 or later. The default model is Meta Llama 3 8B Instruct. For the full-size checkpoint, obtain access on Hugging Face, authenticate with `hf auth login` or set `HF_TOKEN` in your environment, and use a supported CUDA GPU with sufficient memory. Use `--device cpu` with a small local Llama checkpoint for development.
