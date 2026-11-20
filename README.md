@@ -34,6 +34,28 @@ Each term multiplies the **PL probability of the latent choice** by the **probab
 
 An optional encoder pseudo-label is a **hint supplied in the prompt**. It can influence the utilities through the context. The reported choice $\tilde Y_i$ is the **output** modeled by the noisy PL equation.
 
+### How batch homogeneity and LLM competency enter the theory
+
+In BIDS-ICL, the **worker** $w$ is the LLM making the annotation. **Batch homogeneity** describes the inputs it sees. These affect different parts of the model.
+
+| Part of the paper | Where it enters | What it represents |
+| --- | --- | --- |
+| **Semantic homogeneity of the batch** | The context $C$ shapes $\lambda_r(x;C)$. In the Bayesian interpretation, within-cluster coherence is a proxy for concentration in the utility prior $P(\lambda\mid\eta_w)$. | Related inputs can support the same interpretation and widen the utility gap between candidate labels. Coherence is estimated by averaging embedding similarity to nearby inputs in the cluster. |
+| **LLM competency** | The worker's uncertainty profile $\eta_w$ and the worker prior $P(\eta_w)$. | The theory represents a more proficient LLM with a profile concentrated on agreement between the latent choice and the reported choice. A specialized proxy LLM approximates this regime. |
+| **Likelihood of the observed report** | $P(\tilde Y\mid\lambda,\eta_w)$, calculated by the noisy PL equation above. | Given the label utilities and worker profile, how likely is the LLM to report the choice we observed? The likelihood combines the two effects. |
+
+The Bayesian view connects them:
+
+$
+P(\lambda,\eta_w\mid\tilde Y)
+\propto
+\underbrace{P(\tilde Y\mid\lambda,\eta_w)}_{\text{likelihood of the report}}
+\underbrace{P(\lambda\mid\eta_w)}_{\text{prior over utilities}}
+\underbrace{P(\eta_w)}_{\text{worker prior}}.
+$
+
+For example, a coherent batch about moving existing appointments can make *reschedule* stand out for “Can we do Friday instead?” A proficient LLM may pick up that context in the **No-Hint** setting. In the **With-Hint** setting, an encoder's guess of *reschedule* can give a less proficient LLM additional evidence. A mistaken *schedule* hint can instead pull the prediction toward the wrong label, especially when the surrounding inputs supply weak evidence. The posterior is an explanatory model for this interaction. At inference time, BIDS-ICL supplies the batch prompt and reads the LLM's predictions.
+
 ## Setup
 
 Use Python 3.10 or later. The default model is Meta Llama 3 8B Instruct. For the full-size checkpoint, obtain access on Hugging Face, authenticate with `hf auth login` or set `HF_TOKEN` in your environment, and use a supported CUDA GPU with sufficient memory. Use `--device cpu` with a small local Llama checkpoint for development.
