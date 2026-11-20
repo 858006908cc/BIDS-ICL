@@ -12,6 +12,10 @@ This package contains the attention mechanism experiments and a notebook for sum
 
 ## Theory: Plackett–Luce and noisy Plackett–Luce
 
+**What is a utility score?** The utility $\lambda_r(x;C)$ is a latent score that represents how strongly the evidence in input $x$ and context $C$ favors candidate label $r$. For example, “Can we do Friday instead?” may fit both *schedule* and *reschedule*. In a batch about moving existing appointments, the model may assign *reschedule* a higher utility. The utility is an unnormalized score. The PL equation converts it to a choice probability.
+
+Only differences between scores matter. If *reschedule* has utility $2$ and *schedule* has utility $1$, the PL odds favor *reschedule* by $e^{2-1}\approx 2.7$ to 1. Utilities $5$ and $4$ give the same odds. These numbers illustrate the model. BIDS-ICL uses the utilities to explain how batch context can change label preferences, while the inference procedure reads the LLM's predictions from the batch prompt.
+
 **Plackett–Luce (PL)** turns utility scores into probabilities over the labels still available at ranking stage $i$. Let $\rho^{(i)},\ldots,\rho^{(L)}$ be those candidates. The probability of latent choice $Y_i=\rho^{(t)}$ is
 
 $\Delta_{i,t}(\lambda)= P(Y_i=\rho^{(t)}\mid\lambda)= \frac{e^{\lambda_{\rho^{(t)}}}}{\sum_{v=i}^{L} e^{\lambda_{\rho^{(v)}}}}.$
