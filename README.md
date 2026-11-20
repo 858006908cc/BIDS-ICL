@@ -14,7 +14,9 @@ This package contains the attention mechanism experiments and a notebook for sum
 
 **A simple example.** A customer writes, “I need a new one.” On its own, the message could mean *order a card* or *replace a card*. Now read it alongside two messages in the same batch: “My card is cracked” and “Can I get a replacement for my damaged card?” The shared topic gives the model a reason to favor *replace a card* for the first message. BIDS-ICL uses the batch this way to predict one label for each message.
 
-**Utility means label score.** The score $\lambda_r(x;C)$ says how well label $r$ fits message $x$ in context $C$. Plackett–Luce turns these scores into probabilities. A larger gap between *replace a card* and *order a card* makes the higher-scoring label more likely to be chosen.
+**What is $\lambda$?** For one input $x$ and its batch context $C$, $\lambda(x;C)=(\lambda_1(x;C),\ldots,\lambda_K(x;C))$ is the list of utility scores, one for each of the $K$ candidate labels. A score $\lambda_r(x;C)$ represents how well label $r$ fits that input in context. We write $\lambda$ for the whole list when the input and batch are fixed.
+
+For “I need a new one,” the nearby messages about a cracked card might give *replace a card* a score of 2 and *order a card* a score of 1. These scores are illustrative. Plackett–Luce turns them into probabilities of a latent choice. In the likelihood below, $\Delta_{i,t}(\lambda)$ is that utility-based probability for candidate $\rho^{(t)}$. The worker term then gives the chance of reporting $\rho^{(i)}$ given that latent choice.
 
 **Plackett–Luce (PL)** turns utility scores into probabilities over the labels still available at ranking stage $i$. Let $\rho^{(i)},\ldots,\rho^{(L)}$ be those candidates. The probability of latent choice $Y_i=\rho^{(t)}$ is
 
