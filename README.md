@@ -44,15 +44,17 @@ In BIDS-ICL, the **worker** $w$ is the LLM making the annotation. **Batch homoge
 | **LLM competency** | The worker's uncertainty profile $\eta_w$ and the worker prior $P(\eta_w)$. | The theory represents a more proficient LLM with a profile concentrated on agreement between the latent choice and the reported choice. A specialized proxy LLM approximates this regime. |
 | **Likelihood of the observed report** | $P(\tilde Y\mid\lambda,\eta_w)$, calculated by the noisy PL equation above. | Given the label utilities and worker profile, how likely is the LLM to report the choice we observed? The likelihood combines the two effects. |
 
-The Bayesian view connects them:
+The Bayesian view combines the three terms.
 
-$
-P(\lambda,\eta_w\mid\tilde Y)
+```math
+P(\lambda,\eta_w\mid\tilde{Y})
 \propto
-\underbrace{P(\tilde Y\mid\lambda,\eta_w)}_{\text{likelihood of the report}}
-\underbrace{P(\lambda\mid\eta_w)}_{\text{prior over utilities}}
-\underbrace{P(\eta_w)}_{\text{worker prior}}.
-$
+P(\tilde{Y}\mid\lambda,\eta_w)
+\,P(\lambda\mid\eta_w)
+\,P(\eta_w)
+```
+
+From left to right on the right-hand side, the factors are the **likelihood of the report**, the **prior over utilities**, and the **worker prior**.
 
 For example, a coherent batch about moving existing appointments can make *reschedule* stand out for “Can we do Friday instead?” A proficient LLM may pick up that context in the **No-Hint** setting. In the **With-Hint** setting, an encoder's guess of *reschedule* can give a less proficient LLM additional evidence. A mistaken *schedule* hint can instead pull the prediction toward the wrong label, especially when the surrounding inputs supply weak evidence. The posterior is an explanatory model for this interaction. At inference time, BIDS-ICL supplies the batch prompt and reads the LLM's predictions.
 
