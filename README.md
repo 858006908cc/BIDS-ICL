@@ -60,7 +60,7 @@ P(\tilde{Y}\mid\lambda,\eta_w)
 \,P(\eta_w)
 ```
 
-**How to read the equation.** The two priors describe plausible utilities and worker behavior before observing the LLM's output. The likelihood tells us how probable that output is under those assumptions.
+**How to read the equation.** The left-hand side is the **posterior**. Bayes' rule gives **posterior ∝ likelihood × joint prior**. The noisy PL sum above supplies the likelihood. By the probability chain rule, the joint prior $P(\lambda,\eta_w)$ factors into $P(\lambda\mid\eta_w)P(\eta_w)$. This says to model the worker profile first and then describe which utility scores are plausible given that profile. The likelihood then weights each combination by how well it explains the observed LLM report. The proportionality sign leaves out the normalizing constant.
 
 - **Worker-conditioned utility prior** $P(\lambda\mid\eta_w)$. Given a worker profile (expert-like, amateur-like, or guessing-like), this prior describes which clustering-induced utility patterns are plausible. Within-cluster coherence is a practical proxy for how concentrated that prior is.
 - **Worker competency prior** $P(\eta_w)$. This prior describes plausible competency profiles for the abstract worker before observing a report. An expert-like profile concentrates mass on the first choice, an amateur-like profile spreads it over the top few choices, and a guessing-like profile is nearly uniform.
