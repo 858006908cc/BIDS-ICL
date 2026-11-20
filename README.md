@@ -24,13 +24,13 @@ Only differences between scores matter. If *reschedule* has utility $2$ and *sch
 
 In BIDS-ICL, a coherent batch can widen the utility gap between a plausible label and its competitors. PL remains probabilistic, and the leading utility can favor the wrong label. The candidate label set is known at inference time. The true label for each test input is held out for evaluation.
 
-**Noisy Plackett–Luce** adds a worker response model. On the slide, $Y_i$ is the latent utility-based choice, $\tilde Y_i$ is the worker's reported choice, and $\eta_w$ is the worker's uncertainty profile. For the report $\rho^{(i)}$, the normalized weight $\bar\eta_w^{(t-i+1;i)}$ gives the probability of that report when the latent choice is $\rho^{(t)}$. The report probability sums over every possible latent choice:
+**Noisy Plackett–Luce** adds a worker response model. In §4.1.1, $Y_i$ is the latent utility-based choice, $\tilde Y_i$ is the worker's reported choice, and $\eta_w$ is the worker's uncertainty profile. For the report $\rho^{(i)}$, the normalized weight $\bar\eta_w^{(t-i+1;i)}$ gives the probability of that report when the latent choice is $\rho^{(t)}$. The report probability sums over every possible latent choice:
 
 ```math
 P(\tilde Y_i=\rho^{(i)}\mid\lambda,\eta_w)= \sum_{t=i}^{L}\bar\eta_w^{(t-i+1;i)}\,\Delta_{i,t}(\lambda)
 ```
 
-Each term multiplies the **PL probability of the latent choice** by the **probability that the worker gives the observed report given that choice**. The slide models a more proficient worker with a profile more concentrated on agreement.
+Each term multiplies the **PL probability of the latent choice** by the **probability that the worker gives the observed report given that choice**. The paper assumes that worker-dependent noise depends on the rank offset and represents a more proficient worker with a profile more concentrated on agreement. Equations (2)–(3) provide an interpretive model. BIDS-ICL performs closed-set top-1 prediction for each input using the batch prompt.
 
 **Worked example.** Suppose PL assigns *reschedule* an 80% chance and *schedule* a 20% chance. If the worker reports *reschedule* with probability 90% when the latent choice is *reschedule* and 10% when it is *schedule*, the overall report probability is $0.8(0.9)+0.2(0.1)=0.74$.
 
@@ -45,7 +45,7 @@ In BIDS-ICL, the **worker** $w$ is the LLM making the annotation. **Batch homoge
 | Part of the paper | Where it enters | What it represents |
 | --- | --- | --- |
 | **Semantic homogeneity of the batch** | The context $C$ shapes $\lambda_r(x;C)$. In the Bayesian interpretation, within-cluster coherence is a proxy for concentration in the utility prior $P(\lambda\mid\eta_w)$. | Related inputs can support the same interpretation and widen the utility gap between candidate labels. Coherence is estimated by averaging embedding similarity to nearby inputs in the cluster. |
-| **LLM competency** | The worker's uncertainty profile $\eta_w$ and the worker prior $P(\eta_w)$. | The theory represents a more proficient LLM with a profile concentrated on agreement between the latent choice and the reported choice. A specialized proxy LLM approximates this regime. |
+| **LLM competency** | The worker's uncertainty profile $\eta_w$ and the worker prior $P(\eta_w)$. | The theory represents a more proficient LLM with a profile concentrated on agreement between the latent choice and the reported choice. The paper uses comparisons across models as empirical proxies for competency. |
 | **Likelihood of the observed report** | $P(\tilde Y\mid\lambda,\eta_w)$, calculated by the noisy PL equation above. | Given the label utilities and worker profile, how likely is the LLM to report the choice we observed? The likelihood combines the two effects. |
 
 The Bayesian view combines the three terms.
@@ -65,11 +65,11 @@ For example, a coherent batch about moving existing appointments can make *resch
 
 ### How noisy Plackett–Luce informs the experimental design
 
-- **Sentence encoder → batch homogeneity.** We vary the sentence encoder used to embed and cluster inputs. Different encoders can produce batches with different levels of semantic homogeneity. For a fixed LLM, comparing these batches probes how the context $C$ changes the evidence for candidate labels and, in the theory, their utility scores $\lambda$. We use cluster coherence to characterize the resulting batches.
-- **LLM → worker and observed output.** The LLM is the worker $w$. It receives a prompt containing the clustered batch and produces a label for each input. The generated label is the observed report $\tilde{Y}$. For a fixed encoder and batch, comparing LLMs probes how models of different competency use the same context. The uncertainty profile $\eta_w$ represents these differences in the theory.
-- **No-Hint versus With-Hint → additional context.** Using the same batch and LLM, we compare prompts with inputs alone against prompts that also include encoder-generated pseudo-label hints. This tests whether hints help or hurt at different levels of homogeneity and model competency.
+- **Encoder and clustering → batch homogeneity.** The backbone ablation varies the sentence encoder used to embed and cluster inputs. Figure 1 compares No-Hint accuracy across clustering encoders and relates it to measured batch coherence. Appendix A.2 also compares clustered batches with random batches of the same size to isolate the contribution of semantic structure. In the theory, coherence is a surrogate for how sharply the context can separate candidate-label utilities.
+- **Competency → worker uncertainty.** Section 4.1.1 treats the predicting LLM as a virtual worker. Given a clustered batch prompt, the LLM produces one closed-set label per input. That output is the observed report $\tilde{Y}$ in the analogy. The paper also uses worker terminology for the proxy comparison in Table 1. There, the general-purpose BERT baseline is amateur-like and the sentence-tuned MiniLM model is expert-like. These encoder-side proxies play a different experimental role from the prompted LLM that produces the final label.
+- **Structure-only versus Structure + Hints → pseudo-label utility.** Appendix A.2 compares prompts containing the same clustered inputs, first alone and then with pseudo-label hints from the clustering and label-propagation pipeline. The hints can carry errors from both steps. The comparison examines when those hints help or hurt as the quality of the batch context and the competency of the LLM vary.
 
-The noisy PL likelihood $P(\tilde{Y}\mid\lambda,\eta_w)$ brings these roles together. The encoder shapes the batch context that informs the utilities, and the LLM produces the report from that context. The experiments compare observed prediction accuracy. The utilities and worker uncertainty serve as theoretical explanations.
+The noisy PL likelihood $P(\tilde{Y}\mid\lambda,\eta_w)$ links the **utility structure induced by the batch** to the **worker's reported choice**. The experiments measure prediction accuracy and use empirical surrogates for coherence and competency. The stagewise likelihood and the Bayesian posterior explain the hypothesized interaction.
 
 ## Setup
 
